@@ -1,3 +1,13 @@
+# ---------------- Virtual environment
+create-venv:
+	python3 -m venv venv
+
+up-venv:
+	source venv/bin/activate
+
+down-venv:
+	deactivate
+
 # python commands
 py-install:
 	pip install --upgrade pip
