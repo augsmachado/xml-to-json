@@ -18,7 +18,7 @@ freeze-pip:
 
 # tests commands
 run-tests:
-	pytest tests
+	pytest tests --disable-warnings
 
 # fastapi commands
 run-fastapi:
