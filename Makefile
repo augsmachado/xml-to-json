@@ -1,21 +1,25 @@
-# ---------------- Virtual environment
-create-venv:
+# virtual environment commands
+venv-create:
 	python3 -m venv venv
 
-up-venv:
+venv-up:
 	source venv/bin/activate
 
-down-venv:
+venv-down:
 	deactivate
 
 # python commands
-py-install:
+install-pip:
 	pip install --upgrade pip
 	pip install -r requirements.txt --upgrade
 
-py-run-tests:
+freeze-pip:
+	pip freeze > requirements.txt
+
+# tests commands
+run-tests:
 	pytest tests
 
 # fastapi commands
-fastapi-run:
+run-fastapi:
 	uvicorn main:app --reload
