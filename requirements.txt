@@ -1,4 +1,10 @@
+# Development dependencies for the Timezone API project
+pytest
+
+
+# Production dependencies
 fastapi[all]
 uvicorn
+dotenv
 xmltodict
 dicttoxml

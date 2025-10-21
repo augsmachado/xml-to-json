@@ -1,20 +1,18 @@
-# main.py
-
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-import time
-import xmltodict
-import json
-from dicttoxml import dicttoxml
+from dotenv import load_dotenv
+import os
+
+from routes import status, convertions
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(
     title="XML/JSON Utility API",
     version="1.0.0",
     description="API for status, XML to JSON, and JSON to XML conversion"
 )
-
-start_time = time.time()
 
 # Allow CORS for all origins (optional, for testing)
 app.add_middleware(
@@ -25,44 +23,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/status")
-def status():
-    uptime = int(time.time() - start_time)
-    return {
-        "msg": "API status 🚀",
-        "name": "xml-json-api",
-        "version": app.version,
-        "uptime": uptime
-    }
-
-@app.post("/to-json")
-async def to_json(request: Request):
+API_KEY = os.environ.get("API_KEY")
+def require_api_key(x_api_key: str = Header(..., alias="X-API-KEY")):
     """
-    Receives XML in the request body (text/plain or application/xml) and returns JSON.
+    Dependency to require API_KEY in the X-API-KEY header.
     """
-    xml_text = await request.body()
-    try:
-        xml_text = xml_text.decode("utf-8")
-        data = xmltodict.parse(xml_text)
-        return JSONResponse(content=data)
-    except Exception as e:
-        return JSONResponse(
-            status_code=400,
-            content={"error": "Invalid XML", "details": str(e)}
+    if x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API Key."
         )
-
-@app.post("/to-xml")
-async def to_xml(request: Request):
-    """
-    Receives JSON in the request body and returns XML as text.
-    """
-    try:
-        json_data = await request.json()
-        xml_bytes = dicttoxml(json_data, custom_root='root', attr_type=False)
-        xml_str = xml_bytes.decode("utf-8")
-        return PlainTextResponse(content=xml_str, media_type="application/xml")
-    except Exception as e:
-        return JSONResponse(
-            status_code=400,
-            content={"error": "Invalid JSON", "details": str(e)}
-        )
+        
+# Include routers
+app.include_router(status.router)
+app.include_router(
+    convertions.router,
+    dependencies=[Depends(require_api_key)]
+)
